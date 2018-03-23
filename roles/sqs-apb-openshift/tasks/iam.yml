@@ -1,0 +1,39 @@
+---
+- name: Create SQS IAM user
+  iam:
+    iam_type: user
+    name: "apb-sqs-iam-{{ stack_suffix }}"
+    state: present
+    access_key_state: create
+  register: iam_output
+  when: state == 'present'
+
+- name: Generate IAM policy temporary json file
+  template:
+    src: "{{ role_path }}/files/SQSAccessPolicy.json.j2"
+    dest: "/tmp/{{ stack_suffix }}.json"
+  when: state == 'present'
+
+- name: Attach SQS access IAM policy
+  iam_policy:
+    iam_type: user
+    iam_name: "apb-sqs-iam-{{ stack_suffix }}"
+    policy_name: "SQSAccessPolicy"
+    state: present
+    policy_document: "/tmp/{{ stack_suffix }}.json"
+  when: state == 'present'
+
+- name: Remove SQS access IAM policy
+  iam_policy:
+    iam_type: user
+    iam_name: "apb-sqs-iam-{{ stack_suffix }}"
+    policy_name: "SQSAccessPolicy"
+    state: absent
+  when: state == 'absent'
+
+- name: Remove SQS IAM user
+  iam:
+    iam_type: user
+    name: "apb-sqs-iam-{{ stack_suffix }}"
+    state: absent
+  when: state == 'absent'

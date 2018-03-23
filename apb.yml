@@ -1,6 +1,6 @@
 version: 1.0
 name: sqs-apb
-description: Amazon Managed SQS Queue APB Implementation
+description: AWS SQS Queue APB - Demo
 tags:
   - amazon
   - sqs
@@ -9,18 +9,18 @@ tags:
 bindable: true
 async: optional
 metadata:
-  displayName: "Amazon SQS Queue (APB)"
+  displayName: "AWS SQS Demo (APB)"
   imageUrl: "https://s3.amazonaws.com/thp-aws-icons-dev/Messaging_AmazonSQS_LARGE.png"
   documentationUrl: "https://aws.amazon.com/documentation/sqs/"
-  longDescription: "Amazon Simple Queue Service (Amazon SQS) is a fully managed message queuing service that makes it easy to decouple and scale microservices, distributed systems, and serverless applications. Amazon SQS moves data between distributed application components and helps you decouple these components."
+  longDescription: "AWS SQS Queue APB to demo Errors"
   providerDisplayName: "Amazon Web Services"
 plans:
-  - name: sqs-standard
-    description: 'Managed SQS Queue (Standard)'
+  - name: fail-region
+    description: 'failure due to FifoQueue not being available in the selected region'
     free: false
     metadata:
-      displayName: "Standard"
-      longDescription: "Standard SQS APB"
+      displayName: "Invalid Region"
+      longDescription: "APB will fail with 'Unknown Attribute FifoQueue'"
       cost: $0.00
     parameters:
       ##########################
@@ -45,75 +45,73 @@ plans:
         description: 'IAM role ARN for use as Cloudformation Stack Role.'
         type: string
         display_group: AWS Account Information
-      ##########################
-      # Standard Queue Settings
-      ##########################
+      ######################
+      # FIFO Queue Settings
+      ######################
       - name: region
         title: AWS Region
-        description: 'AWS Region to create RDS instance in.'
+        description: 'AWS Region to create RDS instance in. (ap-southeast-2 will FAIL!)'
         type: enum
         enum:
-          - ap-northeast-1
-          - ap-northeast-2
-          - ap-south-1
-          - ap-southeast-1
           - ap-southeast-2
-          - ca-central-1
-          - eu-central-1
-          - eu-west-1
-          - eu-west-2
-          - sa-east-1
           - us-east-1
-          - us-east-2
           - us-west-1
           - us-west-2
-        default: us-west-2
-        display_group: Standard Queue Parameters
+        default: "ap-southeast-2"
+        display_group: FIFO Queue Parameters
+      - name: ContentBasedDeduplication
+        required: true
+        title: Content Based Deduplication
+        description: 'specifies whether to enable content-based deduplication'
+        enum: ["true", "false"]
+        type: enum
+        default: "true"
+        display_group: FIFO Queue Parameters
       - name: DelaySeconds
         required: true
         title: Delay Seconds
         description: 'Delay (seconds)'
         type: int
         default: 5
-        display_group: Standard Queue Parameters
+        display_group: FIFO Queue Parameters
       - name: MaximumMessageSize
         title: Maximum Message Size
         description: 'The limit of how many bytes that a message can contain before Amazon SQS rejects it, 1024 bytes (1 KiB) to 262144 bytes (256 KiB)'
         type: int
         default: 262144
-        display_group: Standard Queue Parameters
+        display_group: FIFO Queue Parameters
       - name: MessageRetentionPeriod
         title: Message Retention Period
         description: 'The number of seconds that Amazon SQS retains a message. You can specify an integer value from 60 seconds (1 minute) to 1209600 seconds (14 days).'
         type: int
         default: 345600
-        display_group: Standard Queue Parameters
+        display_group: FIFO Queue Parameters
       - name: ReceiveMessageWaitTimeSeconds
         title: Receive Message Wait Time Seconds
         description: 'Specifies the duration, in seconds, that the ReceiveMessage action call waits until a message is in the queue in order to include it in the response, as opposed to returning an empty response if a message is not yet available. 1 to 20'
         enum: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
         type: enum
         default: "1"
-        display_group: Standard Queue Parameters
+        display_group: FIFO Queue Parameters
       - name: UsedeadletterQueue
         title: Use Dead Letter Queue
         description: 'A dead-letter queue is a queue that other (source) queues can target for messages that can not be processed (consumed) successfully. You can set aside and isolate these messages in the dead-letter queue to determine why their processing does not succeed.'
         enum: ["true", "false"]
         type: enum
         default: "false"
-        display_group: Standard Queue Parameters
+        display_group: FIFO Queue Parameters
       - name: VisibilityTimeout
         title: Visibility Timeout
         description: 'This should be longer than the time it would take to process and delete a message, this should not exceed 12 hours.'
         type: int
         default: 5
-        display_group: Standard Queue Parameters
-  - name: sqs-fifo
-    description: 'Managed SQS Queue (FIFO)'
+        display_group: FIFO Queue Parameters
+  - name: fail-msg-size
+    description: 'failure due to invalid MaximumMessageSize'
     free: false
     metadata:
-      displayName: "FIFO"
-      longDescription: "FIFO SQS APB"
+      displayName: "Invalid MaximumMessageSize"
+      longDescription: "APB will fail with invalid MaximumMessageSize"
       cost: $0.00
     parameters:
       ##########################
@@ -147,10 +145,9 @@ plans:
         type: enum
         enum:
           - us-east-1
-          - us-east-2
+          - us-west-1
           - us-west-2
-          - eu-west-1
-        default: us-west-2
+        default: us-east-1
         display_group: FIFO Queue Parameters
       - name: ContentBasedDeduplication
         required: true
@@ -169,9 +166,9 @@ plans:
         display_group: FIFO Queue Parameters
       - name: MaximumMessageSize
         title: Maximum Message Size
-        description: 'The limit of how many bytes that a message can contain before Amazon SQS rejects it, 1024 bytes (1 KiB) to 262144 bytes (256 KiB)'
+        description: 'The limit of how many bytes that a message can contain before Amazon SQS rejects it, 1024 bytes (1 KiB) to 262144 bytes (256 KiB) - 1000000 will FAIL'
         type: int
-        default: 262144
+        default: 1000000
         display_group: FIFO Queue Parameters
       - name: MessageRetentionPeriod
         title: Message Retention Period
